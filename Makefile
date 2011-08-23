@@ -48,14 +48,14 @@ DEFINES			= \
 #  Any build defines listed above should also be copied here
 INCLUDES		= \
 			-I. \
-			-I../../common \
+			-I$(HOME)/programs/wview-5.19.0/common \
 			-I/usr/local/include
 
 ########################### T A R G E T   I N F O  ############################
 EXE_IMAGE		= datafeedClient
 
 TEST_OBJS		= \
-			../../common/datafeed.o \
+			./datafeed.o \
 			./datafeedClient.o
 
 
