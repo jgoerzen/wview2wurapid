@@ -199,7 +199,7 @@ int main (int argc, char *argv[])
                 if (radSocketReadExact(ClientSocket, (void *)&archiveRecord, sizeof(archiveRecord)) 
                     != sizeof (archiveRecord))
                 {
-                    printf("datafeedClient: ClientSocket read error - abort!\n");
+                    fprintf(stderr, "datafeedClient: ClientSocket read error - abort!\n");
                     ProcessDone = TRUE;
                     continue;
                 }
@@ -208,7 +208,7 @@ int main (int argc, char *argv[])
                 datafeedConvertArchive_NTOH(&hostRecord, &archiveRecord);
 
                 /* process the data ... for example, will just log receipt */
-                printf("dataFeedClient:%s:%d:received archive update: %d\n",
+                fprintf(stderr, "dataFeedClient:%s:%d:received archive update: %d\n",
                            radSocketGetHost (ClientSocket),
                            radSocketGetPort (ClientSocket),
                            (int)hostRecord.dateTime);
@@ -216,7 +216,7 @@ int main (int argc, char *argv[])
         }
     }
 
-    printf("datafeedClient: exiting...");
+    fprintf(stderr, "datafeedClient: exiting...");
     radSocketDestroy(ClientSocket);
     exit (0);
 }
