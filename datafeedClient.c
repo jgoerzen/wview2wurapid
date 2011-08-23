@@ -172,6 +172,17 @@ int main (int argc, char *argv[])
                            radSocketGetHost (ClientSocket),
                            radSocketGetPort (ClientSocket),
                            hostLoopData.outTemp);
+                printf("action=updateraw\twinddir=%d\twindspeedmph=%d\twindgustdir=%d\twindgustmph=%d\thumidity=%d\tdewptf=%.1f\ttempf=%.1f\tdailyrainin=%.2f\tbaromin=%.2f\n",
+                       hostLoopData.windDir,
+                       hostLoopData.windSpeed,
+                       hostLoopData.windGustDir,
+                       hostLoopData.windGust,
+                       hostLoopData.outHumidity,
+                       hostLoopData.dewpoint,
+                       hostLoopData.outTemp,
+                       hostLoopData.dayRain,
+                       hostLoopData.barometer
+                      );
                 break;
 
             case DF_ARCHIVE_PKT_TYPE:
