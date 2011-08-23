@@ -179,7 +179,7 @@ int main (int argc, char *argv[])
                 */
 		ntime = time (NULL);
                 gmtime_r (&ntime, &gmTime);
-                printf("action=updateraw\twinddir=%d\twindspeedmph=%d\twindgustdir=%d\twindgustmph=%d\thumidity=%d\tdewptf=%.1f\ttempf=%.1f\tdailyrainin=%.2f\tbaromin=%.2f&dateutc=%4.4d-%2.2d-%2.2d+%2.2d%%3a%2.2d%%3a%2.2d\n",
+                printf("action=updateraw&winddir=%d&windspeedmph=%d&windgustdir=%d&windgustmph=%d&humidity=%d&dewptf=%.1f&tempf=%.1f&dailyrainin=%.2f&baromin=%.2f&dateutc=%4.4d-%2.2d-%2.2d+%2.2d%%3a%2.2d%%3a%2.2d\n",
                        hostLoopData.windDir,
                        hostLoopData.windSpeed,
                        hostLoopData.windGustDir,
