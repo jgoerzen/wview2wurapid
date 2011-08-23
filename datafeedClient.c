@@ -56,7 +56,7 @@ static void defaultSigHandler (int signum)
             // we have a far end ClientSocket disconnection, we'll handle it in the
             // "read/write" code
             ProcessDone = TRUE;
-            printf("datafeedClient: caught SIGPIPE: set exit flag...\n");
+            fprintf(stderr, "datafeedClient: caught SIGPIPE: set exit flag...\n");
             radProcessSignalCatch(signum, defaultSigHandler);
             break;
 
@@ -74,7 +74,7 @@ static void defaultSigHandler (int signum)
 
         default:
             // exit now, cleaning up:
-            printf("datafeedClient: caught signal %d: exiting...\n", signum);
+            fprintf(stderr, "datafeedClient: caught signal %d: exiting...\n", signum);
             radSocketDestroy(ClientSocket);
             exit(0);
     }
@@ -94,8 +94,11 @@ int main (int argc, char *argv[])
     ARCHIVE_PKT     hostRecord;
     ULONG           dateTime = 0;
     void            (*alarmHandler)(int);
+    time_t              ntime;
+    struct tm           gmTime;
 
-    printf("datafeedClient: Begin...\n");
+
+    fprintf(stderr, "datafeedClient: Begin...\n");
 
     if (argc < 2)
         strcpy (temp, "localhost");
@@ -109,7 +112,7 @@ int main (int argc, char *argv[])
     ClientSocket = radSocketClientCreate(temp, WV_DATAFEED_PORT);
     if (ClientSocket == NULL)
     {
-        printf("datafeedClient: failed to connect to server!\n");
+        fprintf(stderr, "datafeedClient: failed to connect to server!\n");
         exit (1);
     }
 
@@ -120,7 +123,7 @@ int main (int argc, char *argv[])
                             DF_START_FRAME_LENGTH)
         != DF_START_FRAME_LENGTH)
     {
-        printf("datafeedClient: ClientSocket write sync error!\n");
+        fprintf(stderr, "datafeedClient: ClientSocket write sync error!\n");
         exit (1);
     }
 
@@ -133,7 +136,7 @@ int main (int argc, char *argv[])
         exit (1);
     }
 
-    printf("datafeedClient: Requested first archive record...\n");
+    fprintf(stderr, "datafeedClient: Requested first archive record...\n");
 
 
     /* now loop, waiting to get the start frame sequence */
@@ -146,12 +149,12 @@ int main (int argc, char *argv[])
         {
             case ERROR:
                 /* problems! - bail out */
-                printf("datafeedClient: ClientSocket error during sync\n");
+                fprintf(stderr, "datafeedClient: ClientSocket error during sync\n");
                 ProcessDone = TRUE;
                 break;
 
             case FALSE:
-                printf("datafeedClient: packet out of frame...\n");
+                fprintf(stderr, "datafeedClient: packet out of frame...\n");
                 break;
 
             case DF_LOOP_PKT_TYPE:
@@ -159,7 +162,7 @@ int main (int argc, char *argv[])
                 if (radSocketReadExact(ClientSocket, (void *)&loopData, sizeof (loopData)) 
                     != sizeof (loopData))
                 {
-                    printf("datafeedClient: ClientSocket read error - abort!\n");
+                    fprintf(stderr, "datafeedClient: ClientSocket read error - abort!\n");
                     ProcessDone = TRUE;
                     continue;
                 }
@@ -168,11 +171,15 @@ int main (int argc, char *argv[])
                 datafeedConvertLOOP_NTOH(&hostLoopData, &loopData);
 
                 /* process the data ... for example, will just log receipt */
+                /*
                 printf("dataFeedClient:%s:%d:received LOOP update: %.1f\n",
                            radSocketGetHost (ClientSocket),
                            radSocketGetPort (ClientSocket),
                            hostLoopData.outTemp);
-                printf("action=updateraw\twinddir=%d\twindspeedmph=%d\twindgustdir=%d\twindgustmph=%d\thumidity=%d\tdewptf=%.1f\ttempf=%.1f\tdailyrainin=%.2f\tbaromin=%.2f\n",
+                */
+		ntime = time (NULL);
+                gmtime_r (&ntime, &gmTime);
+                printf("action=updateraw\twinddir=%d\twindspeedmph=%d\twindgustdir=%d\twindgustmph=%d\thumidity=%d\tdewptf=%.1f\ttempf=%.1f\tdailyrainin=%.2f\tbaromin=%.2f&dateutc=%4.4d-%2.2d-%2.2d+%2.2d%%3a%2.2d%%3a%2.2d\n",
                        hostLoopData.windDir,
                        hostLoopData.windSpeed,
                        hostLoopData.windGustDir,
@@ -181,7 +188,9 @@ int main (int argc, char *argv[])
                        hostLoopData.dewpoint,
                        hostLoopData.outTemp,
                        hostLoopData.dayRain,
-                       hostLoopData.barometer
+                       hostLoopData.barometer,
+                       gmTime.tm_year + 1900, gmTime.tm_mon + 1, gmTime.tm_mday, 
+                       gmTime.tm_hour, gmTime.tm_min, gmTime.tm_sec
                       );
                 break;
 
