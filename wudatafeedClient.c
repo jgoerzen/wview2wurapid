@@ -184,6 +184,7 @@ int main (int argc, char *argv[])
         write(writepipefd, "1", 1);
         /* try to find the start frame (this blocks if the ClientSocket is empty) */
         retVal = datafeedSyncStartOfFrame(ClientSocket);
+        fprintf(stderr, "retval is %d\n", retVal);
         switch (retVal)
         {
             case ERROR:
@@ -253,6 +254,10 @@ int main (int argc, char *argv[])
                            radSocketGetPort (ClientSocket),
                            (int)hostRecord.dateTime);
                 break;
+            default:
+              fprintf(stderr, "Unknown retVal: %d\n", retVal);
+              exit(1);
+              break;
         }
     }
 
@@ -267,6 +272,9 @@ void runMonitor(pid_t parentpid, int readpipefd) {
   struct timeval timeout;
   int retval;
   char buf[20];
+  time_t timestart;
+  time_t toofast = EXPECTEDINTERVAL / 2;
+  int toofastcount = 0;
 
   while (1) {
     FD_ZERO(&readfdset);
@@ -277,6 +285,7 @@ void runMonitor(pid_t parentpid, int readpipefd) {
     timeout.tv_usec = 0;
 
     fprintf(stderr, "Monitoring for parent\n");
+    timestart = time(NULL);
     retval = select(readpipefd + 2, &readfdset, NULL, &exceptfdset, &timeout);
     if (retval == 0) {
       fprintf(stderr, "Timeout; killing parent\n");
@@ -295,6 +304,17 @@ void runMonitor(pid_t parentpid, int readpipefd) {
       if (read(readpipefd, buf, 1) != 1) {
         fprintf(stderr, "Error reading\n");
         killParentAndExit(parentpid);
+      }
+
+      if ((time(NULL) - timestart) < toofast) {
+        toofastcount++;
+        fprintf(stderr, "Parent signaled too fast; %d packets too fast now\n",
+                toofastcount);
+        
+        if (toofastcount > 8) {
+          fprintf(stderr, "Too many fast packets; killing parend.\n");
+          killParentAndExit(parentpid);
+        }
       }
     }
   }
