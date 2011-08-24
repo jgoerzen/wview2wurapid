@@ -180,6 +180,8 @@ int main (int argc, char *argv[])
     ProcessDone = FALSE;
     while (! ProcessDone)
     {
+        /* Tell the monitor we're still alive by sending exactly 1 byte. */
+        write(writepipefd, "1", 1);
         /* try to find the start frame (this blocks if the ClientSocket is empty) */
         retVal = datafeedSyncStartOfFrame(ClientSocket);
         switch (retVal)
