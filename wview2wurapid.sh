@@ -6,6 +6,8 @@
 
 ID="WIXXXXX"
 PASSWORD="PASSWORD"
+DATAFEED="./wudatafeedClient"
+
 SOFTWARE="wview2wurapid"
 
 set -e
@@ -35,7 +37,7 @@ runner () {
 }
 
 while true; do
-   log < "$ERRORFIFO" &
+   loger -t "$SOFTARE/$$/$DATAFEED" < "$ERRORFIFO" &
    LOGPID="$!"
    ./wudatafeedClient 2> "$ERRORFIFO" | runner
    sleep 2
