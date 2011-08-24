@@ -13,9 +13,7 @@ set pipefail
 
 TMPDIR=`mktemp -d --tmpdir "${SOFTWARE}.XXXXXXXXXXXXX"`
 WGETOUT="$TMPDIR/wgetout"
-FIFO="$TMPDIR/fifo"
 ERRORFIFO="$TMPDIR/errorfifo"
-mkfifo "$FIFO"
 mkfifo "$ERRORFIFO"
 
 trap 'rm -r $TMPDIR' 0
@@ -26,7 +24,7 @@ log () {
 
 runner () {
    log "runner beginning"
-   while read -t 40 LINE < $FIFO; do
+   while read LINE; do
      WGETURL="http://rtupdate.wunderground.com/weatherstation/updateweatherstation.php?ID=${ID}&PASSWORD=${PASSWORD}&softwaretype=${SOFTWARE}&realtime=1&rtfreq=15&${LINE}"
      log "Sending to ${WGETURL}"
      wget --tries=2 -q -O - "$WGETURL" > "$WGETOUT"
@@ -37,16 +35,13 @@ runner () {
 }
 
 while true; do
-   ./wudatafeedClient > "$FIFO" 2> "$ERRORFIFO" &
-   DFPID="$!"
    log < "$ERRORFIFO" &
    LOGPID="$!"
+   ./wudatafeedClient 2> "$ERRORFIFO" | runner
    sleep 2
    runner
    log "Got error from read; will retry in 15s"
-   kill "$DFPID"
    kill "$LOGPID"
-   kill -9 "$DFPID"
    kill -9 "$LOGPID"
    sleep 15
 done
