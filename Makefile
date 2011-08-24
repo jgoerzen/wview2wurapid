@@ -1,3 +1,5 @@
+WVIEWSOURCEPATH = $(HOME)/programs/wview-5.19.0
+
 ###############################################################################
 #                                                                             #
 #  Makefile for the alarm datafeed client example                                            #
@@ -48,7 +50,7 @@ DEFINES			= \
 #  Any build defines listed above should also be copied here
 INCLUDES		= \
 			-I. \
-			-I$(HOME)/programs/wview-5.19.0/common \
+			-I$(WVIEWSOURCEPATH)/common \
 			-I/usr/local/include
 
 ########################### T A R G E T   I N F O  ############################
