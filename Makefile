@@ -52,11 +52,11 @@ INCLUDES		= \
 			-I/usr/local/include
 
 ########################### T A R G E T   I N F O  ############################
-EXE_IMAGE		= datafeedClient
+EXE_IMAGE		= wudatafeedClient
 
 TEST_OBJS		= \
 			./datafeed.o \
-			./datafeedClient.o
+			./wudatafeedClient.o
 
 
 #########################  E X P O R T E D   V A R S  #########################
