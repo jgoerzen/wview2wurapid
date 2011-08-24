@@ -1,3 +1,5 @@
+#define EXPECTEDINTERVAL 15
+
 /*---------------------------------------------------------------------
  
  FILE NAME:
@@ -45,6 +47,9 @@
 */
 static int          ProcessDone;
 static RADSOCK_ID   ClientSocket;
+
+void runMonitor(pid_t parentpid, int readpipefd);
+
 
 /*  ... methods
 */
@@ -96,9 +101,37 @@ int main (int argc, char *argv[])
     void            (*alarmHandler)(int);
     time_t              ntime;
     struct tm           gmTime;
+    pid_t           parentpid, childpid;
+    int             pipefd[2], readpipefd, writepipefd;
 
 
-    fprintf(stderr, "datafeedClient: Begin...\n");
+    parentpid = getpid();
+    if (pipe(pipefd) != 0) {
+      fprintf(stderr, "Could not create pipe.\n");
+      exit(1);
+    }
+
+    readpipefd = pipefd[0];
+    writepipefd = pipefd[1];
+
+    childpid = fork();
+    if (childpid < 0) {
+      fprintf(stderr, "Could not fork.\n");
+      exit(1);
+    }
+
+    if (childpid == 0) {
+      close(writepipefd);
+      runMonitor(parentpid, readpipefd);
+      exit(0);
+    }
+
+    /* From here on, we are in the parent. */
+    close(readpipefd);
+
+    fprintf(stderr, "datafeedClient: Begin.  Parent PID %d, child PID %d\n",
+            parentpid, childpid);
+    
 
     if (argc < 2)
         strcpy (temp, "localhost");
@@ -222,3 +255,40 @@ int main (int argc, char *argv[])
     exit (0);
 }
 
+void runMonitor(pid_t parentpid, int readpipefd) {
+  fd_set readfdset;
+  fd_set exceptfdset;
+  struct timeval timeout;
+  int retval;
+  char buf[20];
+
+  while (1) {
+    FD_ZERO(&readfdset);
+    FD_SET(readpipefd, &readfdset);
+    FD_ZERO(&exceptfdset);
+    FD_SET(readpipefd, &exceptfdset);
+    timeout.tv_sec = EXPECTEDINTERVAL * 2;
+    timeout.tv_usec = 0;
+
+    retval = select(readpipefd + 2, &readfdset, NULL, &exceptfdset, &timeout);
+    if (retval == 0) {
+      fprintf(stderr, "Timeout; killing parent");
+      killparentandexit(parentpid);
+    }
+    if (retval < 0) {
+      fprintf(stderr, "Error on select");
+      killparentandexit(parentpid);
+    }
+    if (FD_ISSET(readpipefd, &exceptfdset)) {
+      fprintf(stderr, "Error on pipe");
+      killparentandexit(parentpid);
+    }
+    if (FD_ISSET(readpipefd, &readfdset)) {
+      fprintf(stderr, "Parent is still alive");
+      read(readpipefd, buf, 1);
+    }
+  }
+}
+      
+           
+  
