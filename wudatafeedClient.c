@@ -315,6 +315,8 @@ void runMonitor(pid_t parentpid, int readpipefd) {
           fprintf(stderr, "Too many fast packets; killing parend.\n");
           killParentAndExit(parentpid);
         }
+      } else {
+        toofastcount = 0;
       }
     }
   }
