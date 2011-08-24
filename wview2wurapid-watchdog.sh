@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WVIEW2WURAPID=./wview2wurapid
+WVIEW2WURAPID=./wview2wurapid.sh
 
 if pgrep -f wview2wurapid.sh > /dev/null &&
    pgrep wudatafeedClient > /dev/null; then
