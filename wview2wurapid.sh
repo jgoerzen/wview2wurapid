@@ -2,11 +2,12 @@
 
 ID="WIXXXXX"
 PASSWORD="PASSWORD"
-SOFTWARE="wview2wlrapid"
+SOFTWARE="wview2wurapid"
 
 TMPDIR=`mktemp -d --tmpdir "${SOFTWARE}.XXXXXXXXXXXXX"`
 WGETOUT="$TMPDIR/wgetout"
 FIFO="$TMPDIR/fifo"
+ERRORFIFO="$TMPDIR/errorfifo"
 mkfifo "$FIFO"
 
 trap 'rm -r $TMPDIR' 0
@@ -28,11 +29,17 @@ runner () {
 }
 
 while true; do
-   ./datafeedClient > "$FIFO" &
+   ./wudatafeedClient > "$FIFO" 2> "$ERRORFIFO" &
+   DFPID="$!"
+   log < "$ERRORFIFO" &
+   LOGPID="$!"
    sleep 2
    runner
    log "Got error from read; will retry in 15s"
-   killall datafeedClient
+   kill "$DFPID"
+   kill "$LOGPID"
+   kill -9 "$DFPID"
+   kill -9 "$LOGPID"
    sleep 15
 done
 

@@ -290,7 +290,10 @@ void runMonitor(pid_t parentpid, int readpipefd) {
     }
     if (FD_ISSET(readpipefd, &readfdset)) {
       fprintf(stderr, "Parent is still alive\n");
-      read(readpipefd, buf, 1);
+      if (read(readpipefd, buf, 1) != 1) {
+        fprintf(stderr, "Error reading\n");
+        killParentAndExit(parentpid);
+      }
     }
   }
 }
