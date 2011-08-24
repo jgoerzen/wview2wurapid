@@ -49,6 +49,7 @@ static int          ProcessDone;
 static RADSOCK_ID   ClientSocket;
 
 void runMonitor(pid_t parentpid, int readpipefd);
+void killParentAndExit(pid_t parentpid);
 
 
 /*  ... methods
@@ -113,6 +114,9 @@ int main (int argc, char *argv[])
 
     readpipefd = pipefd[0];
     writepipefd = pipefd[1];
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
 
     childpid = fork();
     if (childpid < 0) {
@@ -270,25 +274,30 @@ void runMonitor(pid_t parentpid, int readpipefd) {
     timeout.tv_sec = EXPECTEDINTERVAL * 2;
     timeout.tv_usec = 0;
 
+    fprintf(stderr, "Monitoring for parent\n");
     retval = select(readpipefd + 2, &readfdset, NULL, &exceptfdset, &timeout);
     if (retval == 0) {
-      fprintf(stderr, "Timeout; killing parent");
-      killparentandexit(parentpid);
+      fprintf(stderr, "Timeout; killing parent\n");
+      killParentAndExit(parentpid);
     }
     if (retval < 0) {
-      fprintf(stderr, "Error on select");
-      killparentandexit(parentpid);
+      fprintf(stderr, "Error on select\n");
+      killParentAndExit(parentpid);
     }
     if (FD_ISSET(readpipefd, &exceptfdset)) {
-      fprintf(stderr, "Error on pipe");
-      killparentandexit(parentpid);
+      fprintf(stderr, "Error on pipe\n");
+      killParentAndExit(parentpid);
     }
     if (FD_ISSET(readpipefd, &readfdset)) {
-      fprintf(stderr, "Parent is still alive");
+      fprintf(stderr, "Parent is still alive\n");
       read(readpipefd, buf, 1);
     }
   }
 }
       
-           
-  
+void killParentAndExit(pid_t parentpid) {
+  if (kill(parentpid, SIGKILL) < 0) {
+    fprintf(stderr, "Error killing parent\n");
+  }
+  exit(1);
+}
