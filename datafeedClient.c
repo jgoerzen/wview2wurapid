@@ -1,3 +1,4 @@
+#define WUALARMTIMEOUT 35
 /*---------------------------------------------------------------------
  
  FILE NAME:
@@ -99,6 +100,7 @@ int main (int argc, char *argv[])
 
 
     fprintf(stderr, "datafeedClient: Begin...\n");
+    alarm(WUALARMTIMEOUT * 2);
 
     if (argc < 2)
         strcpy (temp, "localhost");
@@ -143,6 +145,7 @@ int main (int argc, char *argv[])
     ProcessDone = FALSE;
     while (! ProcessDone)
     {
+        alarm(WUALARMTIMEOUT);
         /* try to find the start frame (this blocks if the ClientSocket is empty) */
         retVal = datafeedSyncStartOfFrame(ClientSocket);
         switch (retVal)
@@ -192,6 +195,7 @@ int main (int argc, char *argv[])
                        gmTime.tm_year + 1900, gmTime.tm_mon + 1, gmTime.tm_mday, 
                        gmTime.tm_hour, gmTime.tm_min, gmTime.tm_sec
                       );
+                fflush(stdout);
                 break;
 
             case DF_ARCHIVE_PKT_TYPE:
