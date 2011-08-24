@@ -1,11 +1,15 @@
 #!/bin/bash
 
-set -e
-set pipefail
+#  Set your ID and PASSWORD here.
+#  If they contain a space, "&", or "?", use HTTP %xx encoding
+# for those characters.
 
 ID="WIXXXXX"
 PASSWORD="PASSWORD"
 SOFTWARE="wview2wurapid"
+
+set -e
+set pipefail
 
 TMPDIR=`mktemp -d --tmpdir "${SOFTWARE}.XXXXXXXXXXXXX"`
 WGETOUT="$TMPDIR/wgetout"
