@@ -23,9 +23,14 @@ log () {
 
 runner () {
    log "runner beginning"
+   UPDATEDUE=20   # Update every 5 mins (20 packets)
    while read LINE; do
      WGETURL="http://rtupdate.wunderground.com/weatherstation/updateweatherstation.php?ID=${ID}&PASSWORD=${PASSWORD}&softwaretype=${SOFTWARE}&realtime=1&rtfreq=15&${LINE}"
-     log "Sending to ${WGETURL}"
+     let UPDATEDUE-=1
+     if [ "$UPDATEDUE" = "0" ]; then
+       log "20 packets sent; now sending to ${WGETURL}"
+       UPDATEDUE=20
+     fi
      wget --tries=2 -q -O - "$WGETURL" > "$WGETOUT"
      if grep -qvi success "$WGETOUT"; then
         log "Error from wunderground"

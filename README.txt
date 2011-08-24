@@ -4,7 +4,10 @@ Copyright (c) 2011 John Goerzen
 
 Portions Copyright (c) wview developers
 
-License in COPYING, see below.
+License in COPYING.
+
+        This source code is released for free distribution under the terms 
+        of the GNU General Public License.
 
 ------------------------------------------------------------
 Introduction
@@ -66,4 +69,3 @@ wview2wurapid-watchdog.sh is one example; edit WVIEW2WURAPID in it and
 then deploy as:
 
 */10 * * * * /path/to/wview2wurapid-watchdog.sh
-
