@@ -192,6 +192,7 @@ int main (int argc, char *argv[])
                        gmTime.tm_year + 1900, gmTime.tm_mon + 1, gmTime.tm_mday, 
                        gmTime.tm_hour, gmTime.tm_min, gmTime.tm_sec
                       );
+                fflush(stdout);
                 break;
 
             case DF_ARCHIVE_PKT_TYPE:
