@@ -1,5 +1,3 @@
-#define EXPECTEDINTERVAL 15
-
 /*---------------------------------------------------------------------
  
  FILE NAME:
@@ -47,10 +45,6 @@
 */
 static int          ProcessDone;
 static RADSOCK_ID   ClientSocket;
-
-void runMonitor(pid_t parentpid, int readpipefd);
-void killParentAndExit(pid_t parentpid);
-
 
 /*  ... methods
 */
@@ -102,40 +96,11 @@ int main (int argc, char *argv[])
     void            (*alarmHandler)(int);
     time_t              ntime;
     struct tm           gmTime;
-    pid_t           parentpid, childpid;
-    int             pipefd[2], readpipefd, writepipefd;
-
-
-    parentpid = getpid();
-    if (pipe(pipefd) != 0) {
-      fprintf(stderr, "Could not create pipe.\n");
-      exit(1);
-    }
-
-    readpipefd = pipefd[0];
-    writepipefd = pipefd[1];
 
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    childpid = fork();
-    if (childpid < 0) {
-      fprintf(stderr, "Could not fork.\n");
-      exit(1);
-    }
-
-    if (childpid == 0) {
-      close(writepipefd);
-      runMonitor(parentpid, readpipefd);
-      exit(0);
-    }
-
-    /* From here on, we are in the parent. */
-    close(readpipefd);
-
-    fprintf(stderr, "datafeedClient: Begin.  Parent PID %d, child PID %d\n",
-            parentpid, childpid);
-    
+    fprintf(stderr, "datafeedClient: Begin...\n");
 
     if (argc < 2)
         strcpy (temp, "localhost");
@@ -180,11 +145,8 @@ int main (int argc, char *argv[])
     ProcessDone = FALSE;
     while (! ProcessDone)
     {
-        /* Tell the monitor we're still alive by sending exactly 1 byte. */
-        write(writepipefd, "1", 1);
         /* try to find the start frame (this blocks if the ClientSocket is empty) */
         retVal = datafeedSyncStartOfFrame(ClientSocket);
-        fprintf(stderr, "retval is %d\n", retVal);
         switch (retVal)
         {
             case ERROR:
@@ -266,65 +228,3 @@ int main (int argc, char *argv[])
     exit (0);
 }
 
-void runMonitor(pid_t parentpid, int readpipefd) {
-  fd_set readfdset;
-  fd_set exceptfdset;
-  struct timeval timeout;
-  int retval;
-  char buf[20];
-  time_t timestart;
-  time_t toofast = EXPECTEDINTERVAL / 2;
-  int toofastcount = 0;
-
-  while (1) {
-    FD_ZERO(&readfdset);
-    FD_SET(readpipefd, &readfdset);
-    FD_ZERO(&exceptfdset);
-    FD_SET(readpipefd, &exceptfdset);
-    timeout.tv_sec = EXPECTEDINTERVAL * 2;
-    timeout.tv_usec = 0;
-
-    fprintf(stderr, "Monitoring for parent\n");
-    timestart = time(NULL);
-    retval = select(readpipefd + 2, &readfdset, NULL, &exceptfdset, &timeout);
-    if (retval == 0) {
-      fprintf(stderr, "Timeout; killing parent\n");
-      killParentAndExit(parentpid);
-    }
-    if (retval < 0) {
-      fprintf(stderr, "Error on select\n");
-      killParentAndExit(parentpid);
-    }
-    if (FD_ISSET(readpipefd, &exceptfdset)) {
-      fprintf(stderr, "Error on pipe\n");
-      killParentAndExit(parentpid);
-    }
-    if (FD_ISSET(readpipefd, &readfdset)) {
-      fprintf(stderr, "Parent is still alive\n");
-      if (read(readpipefd, buf, 1) != 1) {
-        fprintf(stderr, "Error reading\n");
-        killParentAndExit(parentpid);
-      }
-
-      if ((time(NULL) - timestart) < toofast) {
-        toofastcount++;
-        fprintf(stderr, "Parent signaled too fast; %d packets too fast now\n",
-                toofastcount);
-        
-        if (toofastcount > 8) {
-          fprintf(stderr, "Too many fast packets; killing parend.\n");
-          killParentAndExit(parentpid);
-        }
-      } else {
-        toofastcount = 0;
-      }
-    }
-  }
-}
-      
-void killParentAndExit(pid_t parentpid) {
-  if (kill(parentpid, SIGKILL) < 0) {
-    fprintf(stderr, "Error killing parent\n");
-  }
-  exit(1);
-}
