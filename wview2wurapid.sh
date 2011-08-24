@@ -41,7 +41,6 @@ while true; do
    LOGPID="$!"
    ./wudatafeedClient 2> "$ERRORFIFO" | runner
    sleep 2
-   runner
    log "Got error from read; will retry in 15s"
    kill "$LOGPID"
    kill -9 "$LOGPID"
