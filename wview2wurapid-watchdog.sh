@@ -3,7 +3,7 @@
 WVIEW2WURAPID=./wview2wurapid.sh
 
 if pgrep -f wview2wurapid.sh > /dev/null &&
-   pgrep wudatafeedClient > /dev/null; then
+   pgrep -f wudatafeedClient > /dev/null; then
   exit 0
 else
   sleep 10
