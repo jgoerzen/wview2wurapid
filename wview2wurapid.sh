@@ -9,6 +9,7 @@ WGETOUT="$TMPDIR/wgetout"
 FIFO="$TMPDIR/fifo"
 ERRORFIFO="$TMPDIR/errorfifo"
 mkfifo "$FIFO"
+mkfifo "$ERRORFIFO"
 
 trap 'rm -r $TMPDIR' 0
 
