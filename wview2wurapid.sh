@@ -10,9 +10,6 @@ DATAFEED="./wudatafeedClient"
 
 SOFTWARE="wview2wurapid"
 
-set -e
-set pipefail
-
 TMPDIR=`mktemp -d --tmpdir "${SOFTWARE}.XXXXXXXXXXXXX"`
 WGETOUT="$TMPDIR/wgetout"
 ERRORFIFO="$TMPDIR/errorfifo"
