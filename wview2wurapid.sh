@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set pipefail
+
 ID="WIXXXXX"
 PASSWORD="PASSWORD"
 SOFTWARE="wview2wurapid"
