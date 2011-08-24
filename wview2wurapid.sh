@@ -37,7 +37,7 @@ runner () {
 }
 
 while true; do
-   logger -t "$SOFTARE/$$/$DATAFEED" < "$ERRORFIFO" &
+   logger -t "$SOFTWARE/$$/$DATAFEED" < "$ERRORFIFO" &
    LOGPID="$!"
    ./wudatafeedClient 2> "$ERRORFIFO" | runner
    sleep 2
